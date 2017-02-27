@@ -1,67 +1,77 @@
-#include<iostream>
-#include<cstdio>
-#include<cctype>
-#include<cmath>
-#include<cstdlib>
-#include<algorithm>
-#include<vector>
-#include<string>
-#include<list>
-#include<deque>
-#include<map>
-#include<set>
-#include<queue>
-#include<stack>
-#include<utility>
-#include<sstream>
-#include<cstring>
+#include <string>
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <set>
+#include <map>
+#include <queue>
+
 using namespace std;
 
-class AvoidRoads {
-    public:
-        static const int MAX = 105;
-        bool t[MAX][MAX][2];
-        long long dp[MAX][MAX];
+typedef pair<int,int> couple;
 
-        long long numWays(int w, int h, vector <string> bad) {
-            memset(t, 1, sizeof(t));
-            memset(dp, 0, sizeof(dp));
+bool ins(int a, int max)
+{
+	if(a<0 || a>max)
+		return false;
+	else
+		return true;
+}
 
-            for (int i = 0; i < bad.size(); ++i) {
-                stringstream ss(bad[i]);
-                int a, b, c, d;
-
-                ss >> a >> b >> c >> d;
-                if (a < c) {
-                    t[b][a][0] = false;
-                } else if (b < d) {
-                    t[b][a][1] = false;
-                } else if (c < a) {
-                    t[d][c][0] = false;
-                } else if (d < b) {
-                    t[d][c][1] = false;
-                }
-            }
-
-            dp[0][0] = 1;
-
-            for (int i = 0; i <= h; ++i) {
-                for (int j = 0; j <= w; ++j) {
-                    if (t[i][j][1])
-                        dp[i+1][j] += dp[i][j];
-                    if (t[i][j][0])
-                        dp[i][j+1] += dp[i][j];
-                }
-            }
-
-            for (int i = 0; i <= h; ++i) {
-                cout << i << ": ";
-                for (int j = 0; j <= w; ++j) {
-                    cout << dp[i][j] << " ";
-                }
-                cout << endl;
-            }
-
-            return dp[h][w];
-        }
+class AvoidRoads
+{
+public:
+	long long numWays(int width, int height, vector <string> bad);
 };
+
+long long AvoidRoads::numWays(int width, int height, vector <string> bad)
+{	
+	set< pair<couple,couple> > notgood;
+	set<couple> found;
+	found.insert(couple(0,0));
+	for(int i=0; i<bad.size(); ++i)
+	{
+		couple a,b;
+		stringstream ss(bad[i]);
+		ss >> a.first >> a.second >> b.first >> b.second;
+		notgood.insert( pair<couple,couple>(a,b));
+		notgood.insert( pair<couple,couple>(b,a));
+	}
+
+	vector< vector<long long> > area;
+	vector<long long> row;
+	row.assign(width+1,0);
+	area.assign(height+1,row);
+
+	area[0][0] = 1;
+
+	for(int i=0; i<=height; ++i)
+	{
+		for(int j=0; j<=width; ++j)
+		{
+			for(int k=-1; k<=1; k+=2)
+			{
+				if(ins(i+k,height) && notgood.find(pair<couple,couple>(couple(i,j),couple(i+k,j)))==notgood.end())
+					area[i][j] += area[i+k][j];
+				if(ins(j+k,width) && notgood.find(pair<couple,couple>(couple(i,j),couple(i,j+k)))==notgood.end())
+					area[i][j] += area[i][j+k];
+			}
+		}
+	}
+
+	return area[height][width];
+}
+
+int main()
+{
+	AvoidRoads lala;
+	int a0;
+	int a1;
+	vector <string> a2;
+	a0=35;
+	a1=31;
+	//a2.push_back("0 0 0 1");
+	//a2.push_back("6 6 5 6");
+	long long haha = lala.numWays(a0,a1,a2);
+	return 0;
+}
